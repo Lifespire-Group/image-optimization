@@ -3,6 +3,20 @@
 
 function handler(event) {
     var request = event.request;
+    // Answer robots.txt here. Rewritten like an image it reaches the Lambda as
+    // /robots.txt/original, finds no such object and answers 500, and crawlers
+    // read a 5xx robots.txt as "disallow everything" on the whole image host.
+    if (request.uri === '/robots.txt') {
+        return {
+            statusCode: 200,
+            statusDescription: 'OK',
+            headers: {
+                'content-type': { value: 'text/plain; charset=utf-8' },
+                'cache-control': { value: 'public, max-age=86400' },
+            },
+            body: { encoding: 'text', data: 'User-agent: *\nAllow: /\n' },
+        };
+    }
     var originalImagePath = request.uri;
     //  validate, process and normalize the requested operations in query parameters
     var normalizedOperations = {};
